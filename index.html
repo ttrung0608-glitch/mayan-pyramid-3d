@@ -1,25 +1,14 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>Mayan Pyramid Cinematic</title>
+<title>Mayan Pyramid Jungle</title>
 
 <style>
 body{
 margin:0;
 overflow:hidden;
-background:#020403;
-font-family:Arial;
-}
-
-#title{
-position:absolute;
-top:15px;
-left:15px;
-color:white;
-background:rgba(0,0,0,0.5);
-padding:12px;
-border-radius:10px;
+background:black;
 }
 </style>
 
@@ -27,20 +16,32 @@ border-radius:10px;
 
 <body>
 
-<div id="title">
-🏛️ Mayan Pyramid Cinematic<br>
-Drag to rotate • Scroll to zoom
-</div>
-
 <script type="module">
 
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js';
-import { OrbitControls } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js';
-import { GLTFLoader } from 'https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/loaders/GLTFLoader.js';
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.160/build/three.module.js";
+import { OrbitControls } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/controls/OrbitControls.js";
+import { GLTFLoader } from "https://cdn.jsdelivr.net/npm/three@0.160/examples/jsm/loaders/GLTFLoader.js";
 
 const scene = new THREE.Scene();
 
-scene.fog = new THREE.Fog(0x0a120a,10,80);
+/////////////////////////////////
+// JUNGLE BACKGROUND
+/////////////////////////////////
+
+const loader = new THREE.TextureLoader();
+
+loader.load(
+"https://threejs.org/examples/textures/2294472375_24a3b8ef46_o.jpg",
+(texture)=>{
+texture.mapping = THREE.EquirectangularReflectionMapping;
+scene.background = texture;
+scene.environment = texture;
+}
+);
+
+/////////////////////////////////
+// CAMERA
+/////////////////////////////////
 
 const camera = new THREE.PerspectiveCamera(
 60,
@@ -51,59 +52,51 @@ window.innerWidth/window.innerHeight,
 
 camera.position.set(20,15,30);
 
+/////////////////////////////////
+// RENDERER
+/////////////////////////////////
+
 const renderer = new THREE.WebGLRenderer({antialias:true});
 renderer.setSize(window.innerWidth,window.innerHeight);
-renderer.shadowMap.enabled=true;
+renderer.shadowMap.enabled = true;
 
 document.body.appendChild(renderer.domElement);
 
+/////////////////////////////////
+// CONTROLS
+/////////////////////////////////
+
 const controls = new OrbitControls(camera,renderer.domElement);
-controls.enableDamping=true;
 
-//////////////////////////
-// LIGHTING (cinematic)
-//////////////////////////
+/////////////////////////////////
+// LIGHT
+/////////////////////////////////
 
-const sun = new THREE.DirectionalLight(0xfff2cc,2);
-sun.position.set(30,50,20);
+const sun = new THREE.DirectionalLight(0xffffff,2);
+sun.position.set(20,40,20);
 sun.castShadow=true;
+
 scene.add(sun);
 
-const ambient = new THREE.AmbientLight(0x334433,0.6);
-scene.add(ambient);
+scene.add(new THREE.AmbientLight(0x666666));
 
-//////////////////////////
-// GROUND
-//////////////////////////
+/////////////////////////////////
+// LOAD MODEL
+/////////////////////////////////
 
-const groundGeo = new THREE.PlaneGeometry(300,300);
+const gltfLoader = new GLTFLoader();
 
-const groundMat = new THREE.MeshStandardMaterial({
-color:0x1c2b1c,
-roughness:1
-});
-
-const ground = new THREE.Mesh(groundGeo,groundMat);
-
-ground.rotation.x=-Math.PI/2;
-ground.receiveShadow=true;
-
-scene.add(ground);
-
-//////////////////////////
-// LOAD PYRAMID
-//////////////////////////
-
-const loader = new GLTFLoader();
-
-loader.load("Mayan_Pyramide.glb",(model)=>{
-
-model.scene.scale.set(1,1,1);
+gltfLoader.load("Mayan_Pyramide.glb",(model)=>{
 
 model.scene.traverse((child)=>{
 if(child.isMesh){
+
+// ADD STONE COLOR
+child.material.color.set(0xbfa06a);
+
 child.castShadow=true;
 child.receiveShadow=true;
+
 }
 });
 
@@ -111,9 +104,25 @@ scene.add(model.scene);
 
 });
 
-//////////////////////////
-// ANIMATE
-//////////////////////////
+/////////////////////////////////
+// GROUND
+/////////////////////////////////
+
+const groundGeo = new THREE.PlaneGeometry(300,300);
+
+const groundMat = new THREE.MeshStandardMaterial({
+color:0x2d4f2d
+});
+
+const ground = new THREE.Mesh(groundGeo,groundMat);
+
+ground.rotation.x = -Math.PI/2;
+
+scene.add(ground);
+
+/////////////////////////////////
+// ANIMATION
+/////////////////////////////////
 
 function animate(){
 
@@ -126,16 +135,6 @@ renderer.render(scene,camera);
 }
 
 animate();
-
-window.addEventListener("resize",()=>{
-
-camera.aspect=window.innerWidth/window.innerHeight;
-
-camera.updateProjectionMatrix();
-
-renderer.setSize(window.innerWidth,window.innerHeight);
-
-});
 
 </script>
 
